@@ -1,0 +1,30 @@
+env:
+  global:
+    - secure: U7V/Vjmz0n0itw7nsCH3uWU830OyB9BWQ3wfUzGbruq5vPOd8IP9FkE+RaDW29Tz45y8Bh5TPLWDUhn1aFm57jAF/MzlfXcqshv/a+L43CectBNYkkiEwUq5L0QyZaEJE7YguSJoH+QMqYMysszQlGRaAZKxBL9EWPwc48mH6zIUSn/n5e24ULCTgyDH09wOpKdZFe5qtVsPfO/MiVzN4W2Jaw9YCLdZGvK68BWvEhZAhHuicF1ZxZ3JuASyz1BsmWJVBsoLLlukNEgfCM1DC/nyDS5W/vQ1p+tBFwgf78rZgyNbO770FgDA4/Bcj7uVE9w4Tk6ygs/Cv+dEmz8YqeHl6kvsov+TD3h+eUaDpC10sZxPDOYL3fNSXiclzHM2qnKZjke8e7nyvFEz4Uz2BxCazyHwRDfjyEmc5cwXX259ikChJRuU1orYgoek5xi5QKMiz7Zq9KoqybQDdqfmNzACmzr0WB2zhMdUkkm2MzRuctgWWbZmGXHTes7BuODx90edF9+UyUoIrbFCWHV70GHbSBG7/+nGEAG0yoM0LEuAGHaO/qpPXx5z+71TaJdqvTRc6F1+J3Y5HRRupDOrbsocIqJLC0ovc1ScDvb7ueIf5/1z3oi/EDVPoPeCln4MDAXU5OBpz4yHNp72zsNu3Ex7XHvTRfMmVIpboiCX02M=
+os:
+  - linux
+  - osx
+language: rust
+rust:
+  - beta
+  - stable
+  - nightly
+sudo: false
+branches:
+  only:
+    - master
+cache:
+  cargo: true
+  directories:
+    - $HOME/libsodium
+    - $HOME/elfutils
+install:
+  - curl -sSLO https://github.com/maidsafe/QA/raw/master/Bash%20Scripts/Travis/install_libsodium.sh
+  - . install_libsodium.sh
+script:
+  - curl -sSL https://github.com/maidsafe/QA/raw/master/Bash%20Scripts/Travis/build_and_run_tests.sh | bash
+before_cache:
+  - curl -sSLO https://github.com/maidsafe/QA/raw/master/Bash%20Scripts/Travis/install_elfutils.sh
+  - . install_elfutils.sh
+after_success:
+  - curl -sSL https://github.com/maidsafe/QA/raw/master/Bash%20Scripts/Travis/after_success.sh | bash
