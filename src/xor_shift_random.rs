@@ -18,6 +18,7 @@
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::iter::repeat;
+use std::rc::Rc;
 use std::str;
 use std::sync::Mutex;
 
@@ -30,8 +31,8 @@ lazy_static! {
     static ref SEEDED_RANDOM: Mutex<SeededRandom> = Mutex::new(SeededRandom::default());
 }
 
-thread_local!(static RNG: RefCell<XorShiftRng> =
-    RefCell::new(XorShiftRng::from_seed(get_seed().value())));
+thread_local!(static RNG: Rc<RefCell<XorShiftRng>> =
+    Rc::new(RefCell::new(XorShiftRng::from_seed(get_seed().value()))));
 
 struct SeededRandom {
     function_pointers: ffi::FunctionPointers,
@@ -44,7 +45,7 @@ impl Default for SeededRandom {
         let seed = [rand::random(), rand::random(), rand::random(), rand::random()];
         SeededRandom {
             function_pointers: ffi::FunctionPointers::default(),
-            name: CString::new("Rust XorShiftRng").expect(""),
+            name: unwrap!(CString::new("Rust XorShiftRng")),
             seed: seed,
         }
     }
@@ -88,7 +89,7 @@ mod ffi {
     }
 
     extern "C" fn implementation_name() -> *const c_char {
-        super::SEEDED_RANDOM.lock().expect("").name.as_ptr()
+        unwrap!(super::SEEDED_RANDOM.lock()).name.as_ptr()
     }
 
     extern "C" fn random() -> uint32_t {
@@ -100,8 +101,10 @@ mod ffi {
     extern "C" fn buf(buf: *mut c_void, size: size_t) {
         unsafe {
             let ptr = buf as *mut u8;
+            let rng_ptr = super::RNG.with(|rng| rng.clone());
+            let rng = &mut *rng_ptr.borrow_mut();
             for i in 0..size {
-                *ptr.offset(i as isize) = super::RNG.with(|rng| rng.borrow_mut().gen());
+                *ptr.offset(i as isize) = rng.gen();
             }
         }
     }
@@ -111,7 +114,7 @@ mod ffi {
 #[allow(unsafe_code)]
 pub fn implementation_name() -> String {
     let name_string = unsafe { CStr::from_ptr(ffi::randombytes_implementation_name()).to_bytes() };
-    str::from_utf8(name_string).expect("").to_owned()
+    unwrap!(str::from_utf8(name_string)).to_owned()
 }
 
 /// Returns a random `u32`.
@@ -141,7 +144,7 @@ pub fn random_bytes(size: usize) -> Vec<u8> {
 
 /// Returns a copy of the current RNG seed.
 pub fn get_seed() -> Seed {
-    Seed::new(SEEDED_RANDOM.lock().expect("").seed)
+    Seed::new(unwrap!(SEEDED_RANDOM.lock()).seed)
 }
 
 /// Sets libsodium `randombytes` to this implementation and initialises libsodium.
@@ -153,7 +156,7 @@ pub fn get_seed() -> Seed {
 /// This function is safe to call multiple times concurrently from different threads.
 #[allow(unsafe_code)]
 pub fn init(optional_seed: Option<[u32; 4]>) -> Result<Seed, Error> {
-    let mut init_result = &mut *INIT_RESULT.lock().expect("");
+    let mut init_result = &mut *unwrap!(INIT_RESULT.lock());
     if let Some(ref existing_result) = *init_result {
         // Return error if seed passed in here is different to current one.
         if let Ok(ref existing_seed) = *existing_result {
@@ -167,7 +170,7 @@ pub fn init(optional_seed: Option<[u32; 4]>) -> Result<Seed, Error> {
     }
     let mut sodium_result;
     {
-        let seeded_random = &mut *SEEDED_RANDOM.lock().expect("");
+        let seeded_random = &mut *unwrap!(SEEDED_RANDOM.lock());
         if let Some(value) = optional_seed {
             seeded_random.seed = value;
         }
@@ -191,7 +194,7 @@ pub fn init(optional_seed: Option<[u32; 4]>) -> Result<Seed, Error> {
 }
 
 /// Return a copy of the thread-local RNG pointer
-pub fn get_rng() -> RefCell<XorShiftRng> {
+pub fn get_rng() -> Rc<RefCell<XorShiftRng>> {
     RNG.with(|rng| rng.clone())
 }
 
@@ -207,15 +210,15 @@ mod tests {
 
     #[test]
     fn seeded() {
-        let seed = init(Some(SEED_VALUE)).expect("");
+        let seed = unwrap!(init(Some(SEED_VALUE)));
         assert_eq!(seed.value(), SEED_VALUE);
         assert_eq!(get_seed().value(), SEED_VALUE);
 
         // Initialise with same seed again - should succeed.
-        assert_eq!(init(Some(SEED_VALUE)).expect("").value(), SEED_VALUE);
+        assert_eq!(unwrap!(init(Some(SEED_VALUE))).value(), SEED_VALUE);
 
         // Initialise with no seed - should succeed.
-        assert_eq!(init(None).expect("").value(), SEED_VALUE);
+        assert_eq!(unwrap!(init(None)).value(), SEED_VALUE);
 
         // Initialise with different seed - should fail.
         if let Err(Error::AlreadySeeded) = init(Some([0, 0, 0, 0])) {} else {

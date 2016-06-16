@@ -52,6 +52,8 @@ extern crate quick_error;
 extern crate rand;
 #[cfg(test)]
 extern crate sodiumoxide;
+#[macro_use]
+extern crate unwrap;
 
 mod error;
 mod xor_shift_seed;
