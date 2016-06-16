@@ -44,7 +44,7 @@ impl Default for SeededRandom {
         let seed = [rand::random(), rand::random(), rand::random(), rand::random()];
         SeededRandom {
             function_pointers: ffi::FunctionPointers::default(),
-            name: CString::new("Rust XorShiftRng").expect(""),
+            name: unwrap!(CString::new("Rust XorShiftRng")),
             seed: seed,
         }
     }
@@ -88,7 +88,7 @@ mod ffi {
     }
 
     extern "C" fn implementation_name() -> *const c_char {
-        super::SEEDED_RANDOM.lock().expect("").name.as_ptr()
+        unwrap!(super::SEEDED_RANDOM.lock()).name.as_ptr()
     }
 
     extern "C" fn random() -> uint32_t {
@@ -100,8 +100,10 @@ mod ffi {
     extern "C" fn buf(buf: *mut c_void, size: size_t) {
         unsafe {
             let ptr = buf as *mut u8;
+            let rng_ptr = super::RNG.with(|rng| rng.clone());
+            let rng = &mut *rng_ptr.borrow_mut();
             for i in 0..size {
-                *ptr.offset(i as isize) = super::RNG.with(|rng| rng.borrow_mut().gen());
+                *ptr.offset(i as isize) = rng.gen();
             }
         }
     }
@@ -111,7 +113,7 @@ mod ffi {
 #[allow(unsafe_code)]
 pub fn implementation_name() -> String {
     let name_string = unsafe { CStr::from_ptr(ffi::randombytes_implementation_name()).to_bytes() };
-    str::from_utf8(name_string).expect("").to_owned()
+    unwrap!(str::from_utf8(name_string)).to_owned()
 }
 
 /// Returns a random `u32`.
@@ -141,7 +143,7 @@ pub fn random_bytes(size: usize) -> Vec<u8> {
 
 /// Returns a copy of the current RNG seed.
 pub fn get_seed() -> Seed {
-    Seed::new(SEEDED_RANDOM.lock().expect("").seed)
+    Seed::new(unwrap!(SEEDED_RANDOM.lock()).seed)
 }
 
 /// Sets libsodium `randombytes` to this implementation and initialises libsodium.
@@ -153,7 +155,7 @@ pub fn get_seed() -> Seed {
 /// This function is safe to call multiple times concurrently from different threads.
 #[allow(unsafe_code)]
 pub fn init(optional_seed: Option<[u32; 4]>) -> Result<Seed, Error> {
-    let mut init_result = &mut *INIT_RESULT.lock().expect("");
+    let mut init_result = &mut *unwrap!(INIT_RESULT.lock());
     if let Some(ref existing_result) = *init_result {
         // Return error if seed passed in here is different to current one.
         if let Ok(ref existing_seed) = *existing_result {
@@ -167,7 +169,7 @@ pub fn init(optional_seed: Option<[u32; 4]>) -> Result<Seed, Error> {
     }
     let mut sodium_result;
     {
-        let seeded_random = &mut *SEEDED_RANDOM.lock().expect("");
+        let seeded_random = &mut *unwrap!(SEEDED_RANDOM.lock());
         if let Some(value) = optional_seed {
             seeded_random.seed = value;
         }
@@ -207,15 +209,15 @@ mod tests {
 
     #[test]
     fn seeded() {
-        let seed = init(Some(SEED_VALUE)).expect("");
+        let seed = unwrap!(init(Some(SEED_VALUE)));
         assert_eq!(seed.value(), SEED_VALUE);
         assert_eq!(get_seed().value(), SEED_VALUE);
 
         // Initialise with same seed again - should succeed.
-        assert_eq!(init(Some(SEED_VALUE)).expect("").value(), SEED_VALUE);
+        assert_eq!(unwrap!(init(Some(SEED_VALUE))).value(), SEED_VALUE);
 
         // Initialise with no seed - should succeed.
-        assert_eq!(init(None).expect("").value(), SEED_VALUE);
+        assert_eq!(unwrap!(init(None)).value(), SEED_VALUE);
 
         // Initialise with different seed - should fail.
         if let Err(Error::AlreadySeeded) = init(Some([0, 0, 0, 0])) {} else {
@@ -227,18 +229,18 @@ mod tests {
             random_u32s.push(random_u32());
             random_u32s.push(random_u32_uniform(100));
         }
-        assert_eq!(random_u32s, [809904348, 34, 331598031, 92, 29475044, 66]);
+        assert_eq!(random_u32s, [3, 58, 6168, 68, 4194378, 82]);
 
-        assert_eq!(random_bytes(10), [189, 36, 9, 209, 239, 95, 69, 207, 163, 2]);
+        assert_eq!(random_bytes(10), [137, 89, 75, 193, 8, 153, 136, 7, 141, 220]);
 
         let (public_key, private_key) = box_::gen_keypair();
-        let expected_public_key = [40, 10, 48, 161, 184, 192, 94, 70, 25, 185, 154, 217, 37, 186,
-                                   12, 113, 148, 176, 1, 7, 189, 118, 184, 249, 160, 220, 159, 78,
-                                   111, 46, 223, 20];
+        let expected_public_key = [251, 169, 49, 45, 191, 139, 18, 228, 91, 36, 205, 214, 116,
+                                   246, 98, 80, 47, 58, 155, 17, 197, 164, 254, 254, 87, 133, 172,
+                                   51, 201, 36, 182, 7];
         assert_eq!(expected_public_key, public_key.0);
-        let expected_private_key = [37, 237, 255, 64, 206, 191, 101, 123, 66, 38, 178, 123, 129,
-                                    245, 169, 102, 250, 68, 136, 38, 172, 196, 64, 161, 177, 248,
-                                    224, 146, 98, 147, 140, 46];
+        let expected_private_key = [137, 89, 75, 193, 8, 153, 136, 7, 141, 220, 198, 207, 232,
+                                    228, 74, 189, 36, 9, 209, 239, 95, 69, 207, 163, 2, 37, 237,
+                                    255, 64, 206, 191, 101];
         assert_eq!(expected_private_key, private_key.0);
 
         assert_eq!("Rust XorShiftRng".to_owned(), implementation_name());

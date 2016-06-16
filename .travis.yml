@@ -6,7 +6,6 @@ os:
   - osx
 language: rust
 rust:
-  - beta
   - stable
   - nightly
 sudo: false
