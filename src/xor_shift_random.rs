@@ -204,6 +204,7 @@ pub fn get_rng() -> Rc<RefCell<XorShiftRng>> {
 mod tests {
     use super::*;
     use error::Error;
+    use rand::Rand;
     use sodiumoxide::crypto::box_;
 
     const SEED_VALUE: [u32; 4] = [0, 1, 2, 3];
@@ -232,18 +233,26 @@ mod tests {
         }
         assert_eq!(random_u32s, [809904348, 34, 331598031, 92, 29475044, 66]);
 
-        assert_eq!(random_bytes(10), [189, 36, 9, 209, 239, 95, 69, 207, 163, 2]);
+        let expected_bytes = [189, 36, 9, 209, 239, 95, 69, 207, 163, 2];
+        assert_eq!(random_bytes(10), expected_bytes);
+        assert!(random_bytes(10) != expected_bytes);
 
         let (public_key, private_key) = box_::gen_keypair();
-        let expected_public_key = [40, 10, 48, 161, 184, 192, 94, 70, 25, 185, 154, 217, 37, 186,
-                                   12, 113, 148, 176, 1, 7, 189, 118, 184, 249, 160, 220, 159, 78,
-                                   111, 46, 223, 20];
+        let expected_public_key = [247, 29, 54, 177, 80, 72, 227, 159, 186, 14, 61, 218, 118, 207,
+                                   38, 3, 40, 171, 56, 37, 165, 211, 71, 6, 244, 138, 163, 206,
+                                   103, 138, 238, 113];
         assert_eq!(expected_public_key, public_key.0);
-        let expected_private_key = [37, 237, 255, 64, 206, 191, 101, 123, 66, 38, 178, 123, 129,
-                                    245, 169, 102, 250, 68, 136, 38, 172, 196, 64, 161, 177, 248,
-                                    224, 146, 98, 147, 140, 46];
+        let expected_private_key = [178, 123, 129, 245, 169, 102, 250, 68, 136, 38, 172, 196, 64,
+                                    161, 177, 248, 224, 146, 98, 147, 140, 46, 88, 4, 249, 78,
+                                    116, 214, 146, 56, 227, 137];
         assert_eq!(expected_private_key, private_key.0);
 
         assert_eq!("Rust XorShiftRng".to_owned(), implementation_name());
+
+        let rng1 = get_rng();
+        let rng2 = get_rng();
+        let random1 = u64::rand(&mut *rng1.borrow_mut());
+        let random2 = u64::rand(&mut *rng2.borrow_mut());
+        assert!(random1 != random2);
     }
 }
