@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `libsodium_seeded_prng` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, libsodium_seeded_prng">
+
+    <title>libsodium_seeded_prng - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    <link rel="shortcut icon" href="http://maidsafe.net/img/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../libsodium_seeded_prng/index.html'><img src='https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png' alt='logo' width='100'></a>
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'libsodium_seeded_prng', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>libsodium_seeded_prng</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-0' class='srclink' href='../src/libsodium_seeded_prng/src/lib.rs.html#18-65' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Implementation of <a href="https://download.libsodium.org/doc/advanced/custom_rng.html">libsodium&#39;s <code>randombytes</code></a> which allows a seed to be passed.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Seed.html'
+                                  title='libsodium_seeded_prng::Seed'>Seed</a></td>
+                           <td class='docblock short'>
+                                <p>A simple wrapper used to seed the RNG which prints its value on destruction if the current
+thread is panicking.</p>
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.Error.html'
+                                  title='libsodium_seeded_prng::Error'>Error</a></td>
+                           <td class='docblock short'>
+                                <p>Error types</p>
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.get_rng.html'
+                                  title='libsodium_seeded_prng::get_rng'>get_rng</a></td>
+                           <td class='docblock short'>
+                                <p>Return a copy of the thread-local RNG pointer</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.get_seed.html'
+                                  title='libsodium_seeded_prng::get_seed'>get_seed</a></td>
+                           <td class='docblock short'>
+                                <p>Returns a copy of the current RNG seed.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.implementation_name.html'
+                                  title='libsodium_seeded_prng::implementation_name'>implementation_name</a></td>
+                           <td class='docblock short'>
+                                <p>Returns the name of this libsodium <code>randombytes</code> implementation.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.init.html'
+                                  title='libsodium_seeded_prng::init'>init</a></td>
+                           <td class='docblock short'>
+                                <p>Sets libsodium <code>randombytes</code> to this implementation and initialises libsodium.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.random_bytes.html'
+                                  title='libsodium_seeded_prng::random_bytes'>random_bytes</a></td>
+                           <td class='docblock short'>
+                                <p>Returns a vector of random bytes of length <code>size</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.random_u32.html'
+                                  title='libsodium_seeded_prng::random_u32'>random_u32</a></td>
+                           <td class='docblock short'>
+                                <p>Returns a random <code>u32</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.random_u32_uniform.html'
+                                  title='libsodium_seeded_prng::random_u32_uniform'>random_u32_uniform</a></td>
+                           <td class='docblock short'>
+                                <p>Returns a random <code>u32</code> between 0 and <code>upper_bound</code> (excluded).</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "libsodium_seeded_prng";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>
