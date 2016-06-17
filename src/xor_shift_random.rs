@@ -23,7 +23,7 @@ use std::str;
 use std::sync::Mutex;
 
 use error::Error;
-use rand::{self, SeedableRng, XorShiftRng};
+use rand::{self, Rng, SeedableRng, XorShiftRng};
 use xor_shift_seed::Seed;
 
 lazy_static! {
@@ -193,9 +193,11 @@ pub fn init(optional_seed: Option<[u32; 4]>) -> Result<Seed, Error> {
     overall_result
 }
 
-/// Return a copy of the thread-local RNG pointer
-pub fn get_rng() -> Rc<RefCell<XorShiftRng>> {
-    RNG.with(|rng| rng.clone())
+/// Return a new RNG seeded using random data from the thread-local RNG.
+pub fn get_rng() -> XorShiftRng {
+    let rng_ptr = RNG.with(|rng| rng.clone());
+    let rng = &mut *rng_ptr.borrow_mut();
+    XorShiftRng::from_seed([rng.gen(), rng.gen(), rng.gen(), rng.gen()])
 }
 
 
@@ -249,10 +251,10 @@ mod tests {
 
         assert_eq!("Rust XorShiftRng".to_owned(), implementation_name());
 
-        let rng1 = get_rng();
-        let rng2 = get_rng();
-        let random1 = u64::rand(&mut *rng1.borrow_mut());
-        let random2 = u64::rand(&mut *rng2.borrow_mut());
+        let mut rng1 = get_rng();
+        let mut rng2 = get_rng();
+        let random1 = u64::rand(&mut rng1);
+        let random2 = u64::rand(&mut rng2);
         assert!(random1 != random2);
     }
 }
